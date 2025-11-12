@@ -4,6 +4,7 @@ import com.multipedidos.proveedores.entity.Factura;
 import com.multipedidos.proveedores.entity.Proveedor;
 import com.multipedidos.proveedores.repository.FacturaRepository;
 import com.multipedidos.proveedores.repository.ProveedorRepository;
+import com.multipedidos.common.OperacionesNegocio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,21 +21,27 @@ public class FacturaService {
     private ProveedorRepository proveedorRepository;
 
     public Factura crearFactura(Factura factura, Long proveedorId) {
-   
         Proveedor proveedor = proveedorRepository.findById(proveedorId)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado con ID: " + proveedorId));
 
-      
+        if (factura.getNumeroFactura() == null || factura.getNumeroFactura().isEmpty()) {
+            factura.setNumeroFactura(OperacionesNegocio.generarNumeroFactura("PRO"));
+        }
+
         if (facturaRepository.existsByNumeroFactura(factura.getNumeroFactura())) {
             throw new RuntimeException("El número de factura ya existe: " + factura.getNumeroFactura());
         }
 
-     
+        if (!OperacionesNegocio.validarCodigo(factura.getNumeroFactura())) {
+            throw new RuntimeException("Formato de número de factura inválido. Debe ser: AAA-1234");
+        }
+
         factura.setProveedor(proveedor);
         
-    
         if (factura.getTotalFactura() == null) {
-            factura.setTotalFactura(0.0); 
+            double subtotal = calcularSubtotalDesdePedidos(factura.getPedidosIds());
+            double totalConIVA = OperacionesNegocio.calcularTotalConIVA(subtotal);
+            factura.setTotalFactura(totalConIVA);
         }
 
         return facturaRepository.save(factura);
@@ -50,5 +57,25 @@ public class FacturaService {
 
     public Optional<Factura> obtenerFacturaPorNumero(String numeroFactura) {
         return facturaRepository.findByNumeroFactura(numeroFactura);
+    }
+
+    private double calcularSubtotalDesdePedidos(List<Long> pedidosIds) {
+        if (pedidosIds == null || pedidosIds.isEmpty()) {
+            return 0.0;
+        }
+        return pedidosIds.size() * 100.0;
+    }
+
+    public Factura aplicarDescuentoAFactura(Long facturaId, double porcentajeDescuento) {
+        Factura factura = facturaRepository.findById(facturaId)
+                .orElseThrow(() -> new RuntimeException("Factura no encontrada con ID: " + facturaId));
+
+        double totalConDescuento = OperacionesNegocio.aplicarDescuento(
+            factura.getTotalFactura(), 
+            porcentajeDescuento
+        );
+
+        factura.setTotalFactura(totalConDescuento);
+        return facturaRepository.save(factura);
     }
 }

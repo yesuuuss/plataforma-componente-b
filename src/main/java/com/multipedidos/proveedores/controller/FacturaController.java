@@ -40,4 +40,24 @@ public class FacturaController {
         return factura.map(ResponseEntity::ok)
                       .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/numero/{numeroFactura}")
+    public ResponseEntity<?> obtenerFacturaPorNumero(@PathVariable String numeroFactura) {
+        Optional<Factura> factura = facturaService.obtenerFacturaPorNumero(numeroFactura);
+        return factura.map(ResponseEntity::ok)
+                      .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ✅ NUEVO ENDPOINT - Aplicar descuento usando la librería común
+    @PostMapping("/{id}/descuento")
+    public ResponseEntity<?> aplicarDescuento(
+            @PathVariable Long id, 
+            @RequestParam double porcentajeDescuento) {
+        try {
+            Factura facturaActualizada = facturaService.aplicarDescuentoAFactura(id, porcentajeDescuento);
+            return ResponseEntity.ok(facturaActualizada);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
