@@ -27,7 +27,7 @@ public class Factura {
     @JoinColumn(name = "proveedor_id")
     private Proveedor proveedor;
     
-    // Lista de pedidos asociados (IDs de pedidos del Componente A)
+    
     @ElementCollection
     @CollectionTable(name = "factura_pedidos", joinColumns = @JoinColumn(name = "factura_id"))
     @Column(name = "pedido_id")
