@@ -5,10 +5,11 @@ import com.multipedidos.proveedores.entity.Proveedor;
 import com.multipedidos.proveedores.repository.FacturaRepository;
 import com.multipedidos.proveedores.repository.ProveedorRepository;
 import com.multipedidos.common.OperacionesNegocio;
+import com.multipedidos.common.Producto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -23,6 +24,24 @@ public class FacturaService {
     public Factura crearFactura(Factura factura, Long proveedorId) {
         Proveedor proveedor = proveedorRepository.findById(proveedorId)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado con ID: " + proveedorId));
+
+        if (factura.getClienteId() != null) {
+            System.out.println("🔍 Validando cliente ID: " + factura.getClienteId() + " en Componente A...");
+            
+            List<Producto> productosSimulados = new ArrayList<>();
+            productosSimulados.add(new Producto("Factura-Producto", 100.0));
+            
+            boolean clienteValido = OperacionesNegocio.procesarPedidoConValidacion(
+                factura.getClienteId(), 
+                productosSimulados
+            );
+            
+            if (!clienteValido) {
+                throw new RuntimeException("No se puede crear factura: Cliente con ID " + 
+                    factura.getClienteId() + " no existe en el sistema de pedidos (Componente A)");
+            }
+            System.out.println("✅ Cliente validado exitosamente en Componente A");
+        }
 
         if (factura.getNumeroFactura() == null || factura.getNumeroFactura().isEmpty()) {
             factura.setNumeroFactura(OperacionesNegocio.generarNumeroFactura("PRO"));
