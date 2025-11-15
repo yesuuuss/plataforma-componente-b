@@ -48,7 +48,7 @@ public class FacturaController {
                       .orElse(ResponseEntity.notFound().build());
     }
 
-    // ✅ NUEVO ENDPOINT - Aplicar descuento usando la librería común
+ 
     @PostMapping("/{id}/descuento")
     public ResponseEntity<?> aplicarDescuento(
             @PathVariable Long id, 

@@ -26,7 +26,7 @@ public class FacturaService {
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado con ID: " + proveedorId));
 
         if (factura.getClienteId() != null) {
-            System.out.println("🔍 Validando cliente ID: " + factura.getClienteId() + " en Componente A...");
+            System.out.println(" Validando cliente ID: " + factura.getClienteId() + " en Componente A...");
             
             List<Producto> productosSimulados = new ArrayList<>();
             productosSimulados.add(new Producto("Factura-Producto", 100.0));
@@ -40,7 +40,7 @@ public class FacturaService {
                 throw new RuntimeException("No se puede crear factura: Cliente con ID " + 
                     factura.getClienteId() + " no existe en el sistema de pedidos (Componente A)");
             }
-            System.out.println("✅ Cliente validado exitosamente en Componente A");
+            System.out.println(" Cliente validado exitosamente en Componente A");
         }
 
         if (factura.getNumeroFactura() == null || factura.getNumeroFactura().isEmpty()) {
